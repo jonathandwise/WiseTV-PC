@@ -1,6 +1,6 @@
 'use strict';
 // WiseTV for Windows: app lifecycle, the two windows (video underneath, interface on top), tray.
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell, dialog, Notification, powerSaveBlocker, powerMonitor, screen } = require('electron');
+const { app, BaseWindow, BrowserWindow, ipcMain, Menu, Tray, nativeImage, shell, dialog, Notification, powerSaveBlocker, powerMonitor, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -70,7 +70,9 @@ function iconPath() {
 
 function createWindows() {
   const b = initialBounds();
-  videoWin = new BrowserWindow({
+  // The video window holds no web page (a BaseWindow, not a BrowserWindow): on Windows a browser
+  // surface would be painted over mpv's picture, leaving only the sound.
+  videoWin = new BaseWindow({
     x: b.x, y: b.y, width: b.width, height: b.height,
     minWidth: 960, minHeight: 600,
     backgroundColor: '#000000',
@@ -78,7 +80,6 @@ function createWindows() {
     icon: iconPath(),
     show: false,
     autoHideMenuBar: true,
-    webPreferences: { backgroundThrottling: false },
   });
   videoWin.setMenu(null);
 

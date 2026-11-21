@@ -2,6 +2,10 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.1
+- Fixed: video could be black on Windows while the sound played
+- Volume slider and mute button at the top of the video screen (the mouse wheel and + / − keys still work too)
+
 ## 1.1.0
 - WiseTV now checks for updates when it starts (and every few hours) and can update itself
 - Free channels: 13 free playlists (Samsung TV Plus, XUMO, Roku Channel, Local Now and more) on the Add playlist screen

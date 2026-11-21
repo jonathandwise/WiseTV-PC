@@ -73,6 +73,32 @@ function VolumeOsd() {
 
 const volumeBy = (d) => call('player.setVolume', (getState().player.volume || 0) + d);
 
+/** Speaker button (mute) and a volume slider, for the player's top bar. */
+function VolumeControl() {
+  const vol = useStore((s) => s.player.volume);
+  const mute = useStore((s) => s.player.mute);
+  const [drag, setDrag] = useState(null);
+  const shown = drag != null ? drag : mute ? 0 : Math.round(vol || 0);
+  return (
+    <div class="volume-control" onClick={(e) => e.stopPropagation()} onDblClick={(e) => e.stopPropagation()}
+      onWheel={(e) => { e.stopPropagation(); volumeBy(e.deltaY < 0 ? 5 : -5); }}>
+      <button class="icon-btn big" title={mute ? 'Unmute (U)' : 'Mute (U)'} onClick={() => call('player.toggleMute')}>
+        <Icon name={mute || shown === 0 ? 'mute' : 'volume'} />
+      </button>
+      <input
+        type="range" min="0" max="100" step="1" value={Math.min(100, shown)}
+        title="Volume (+ / − or the mouse wheel)"
+        style={{ '--fill': `${Math.min(100, shown)}%` }}
+        onInput={(e) => { const v = Number(e.currentTarget.value); setDrag(v); call('player.setVolume', v); }}
+        onChange={() => setDrag(null)}
+        onMouseUp={() => setDrag(null)}
+        onKeyDown={(e) => e.stopPropagation()}
+      />
+      <span class="volume-num">{shown}</span>
+    </div>
+  );
+}
+
 function commonKeys(e) {
   switch (e.key) {
     case '+': case '=': case 'AudioVolumeUp': volumeBy(5); return true;
@@ -171,6 +197,7 @@ function LivePlayer({ channel }) {
           <div class="player-topbar ov">
             <button class="icon-btn big" title="Back to the guide (Esc)" onClick={() => nav.pop()}><Icon name="back" /></button>
             <span class="grow" />
+            <VolumeControl />
             <button class="icon-btn big" title="Channel list (Enter)" onClick={() => setListOpen(true)}><Icon name="list" /></button>
             <button class="icon-btn big" title="Options (M or right-click)" onClick={() => setMenuOpen(true)}><Icon name="menu" /></button>
             <button class="icon-btn big" title="Full screen (F)" onClick={() => win('toggleFullscreen')}><Icon name={fullscreen ? 'exitfull' : 'fullscreen'} /></button>
@@ -502,6 +529,7 @@ function VodPlayer({ item }) {
           <div class="player-topbar ov">
             <button class="icon-btn big" title="Back (Esc)" onClick={() => nav.pop()}><Icon name="back" /></button>
             <span class="grow" />
+            <VolumeControl />
             <button class="icon-btn big" title="Audio, subtitles and more (M)" onClick={() => setMenuOpen(true)}><Icon name="menu" /></button>
             <button class="icon-btn big" title="Full screen (F)" onClick={() => win('toggleFullscreen')}><Icon name={fullscreen ? 'exitfull' : 'fullscreen'} /></button>
           </div>
@@ -522,7 +550,6 @@ function VodPlayer({ item }) {
                 {pendingSeek ? `   (${pendingSeek > 0 ? '+' : '−'}${Fmt.clock(Math.abs(pendingSeek))})` : ''}
               </span>
               <span class="grow" />
-              <button class="icon-btn" title="Mute (U)" onClick={() => call('player.toggleMute')}><Icon name={st.mute ? 'mute' : 'volume'} /></button>
               <span class="muted time">{dur > 0 ? `-${Fmt.clock(dur - shownPos)}` : ''}</span>
             </div>
           </div>

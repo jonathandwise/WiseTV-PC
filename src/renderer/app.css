@@ -283,3 +283,9 @@ body.shape-mode .side-panel { background: var(--bg); }
 .list-item.current-pl { color: var(--accent); }
 .free-list { flex: none; overflow: visible; padding-bottom: 0; }
 .update-notes { background: var(--panel2); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
+.volume-control { display: flex; align-items: center; gap: 4px; margin-right: 10px; }
+.volume-control input[type=range] { -webkit-appearance: none; appearance: none; width: 130px; height: 4px; border-radius: 2px; cursor: pointer;
+  background: linear-gradient(90deg, var(--accent) var(--fill), rgba(255, 255, 255, 0.25) var(--fill)); }
+.volume-control input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 7px; background: #fff; border: 0; }
+.volume-control input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.volume-num { width: 30px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
