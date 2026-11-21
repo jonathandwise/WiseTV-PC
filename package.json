@@ -1,0 +1,22 @@
+{
+  "name": "wisetv",
+  "version": "1.1.0",
+  "description": "WiseTV for Windows",
+  "main": "src/main/main.js",
+  "scripts": {
+    "build": "node build.js",
+    "start": "node build.js && electron ."
+  },
+  "author": "Jonathan Wise",
+  "devDependencies": {
+    "@electron/asar": "^4.3.2",
+    "electron": "^45.4.1",
+    "esbuild": "^0.28.2",
+    "resedit": "^3.1.1"
+  },
+  "dependencies": {
+    "preact": "^10.29.8",
+    "sax": "^1.6.1"
+  },
+  "productName": "WiseTV"
+}

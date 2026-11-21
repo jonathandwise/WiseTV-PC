@@ -1,0 +1,61 @@
+name: Build and release
+
+# Pushing a tag like v1.2.0 builds the Windows installer and publishes it as a GitHub release.
+# Installed copies of WiseTV check the latest release when they start and offer the update.
+# "Run workflow" (manual) only builds and keeps the files as a downloadable artifact.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: ubuntu-latest
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y nsis p7zip-full zip
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Download Electron for Windows and mpv
+        run: bash scripts/fetch-vendor.sh
+
+      - name: Check the tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          V="v$(node -p "require('./package.json').version")"
+          if [ "$V" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $V"; exit 1
+          fi
+
+      - name: Build installer
+        run: node package-win.js
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          V=$(node -p "require('./package.json').version")
+          node scripts/release-notes.js "$V" > notes.md
+          gh release create "v$V" "build/WiseTV-Setup-$V.exe" "build/WiseTV-$V-portable.zip" \
+            --title "WiseTV $V" --notes-file notes.md
+
+      - name: Keep the build (manual runs)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: WiseTV-windows
+          path: build/WiseTV-Setup-*.exe
