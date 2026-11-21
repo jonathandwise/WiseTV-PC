@@ -2,6 +2,10 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.2
+- Fixed: black picture with working sound on Windows (newer Chromium hid the video player's window)
+- Settings: "Open WiseTV's data folder" to find the log files
+
 ## 1.1.1
 - Fixed: video could be black on Windows while the sound played
 - Volume slider and mute button at the top of the video screen (the mouse wheel and + / − keys still work too)

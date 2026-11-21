@@ -17,6 +17,13 @@ if (!app.requestSingleInstanceLock()) {
 app.setAppUserModelId('com.wisetv.player');
 if (process.env.WISETV_USER_DATA) app.setPath('userData', process.env.WISETV_USER_DATA);
 
+// mpv draws into a child window of WiseTV's video window. Since Chromium 139, Windows windows made by
+// Chromium with DirectComposition get no redirection surface, so child windows like mpv's stay
+// invisible (sound, but a black picture). Turning DirectComposition off restores them.
+if (process.platform === 'win32' && process.env.WISETV_DCOMP !== '1') {
+  app.commandLine.appendSwitch('disable-direct-composition');
+}
+
 const ASSETS = path.join(__dirname, '..', '..', 'assets');
 const startHidden = process.argv.includes('--hidden');
 let videoWin = null;
@@ -30,7 +37,8 @@ let shownTrayHint = false;
 function decideOverlayMode() {
   const forced = process.env.WISETV_OVERLAY || settings.overlayMode;
   if (forced === 'transparent' || forced === 'shape') return forced;
-  return process.platform === 'win32' ? 'transparent' : 'shape';
+  // "shape" works without DirectComposition (see the top of this file), so it is the default.
+  return 'shape';
 }
 
 function send(name, payload) {
@@ -257,6 +265,9 @@ function registerIpc() {
       case 'openExternal':
         if (/^https?:\/\//i.test(String(arg))) shell.openExternal(String(arg));
         return true;
+      case 'openDataFolder':
+        shell.openPath(app.getPath('userData'));
+        return true;
       case 'openPath':
         if (arg && fs.existsSync(arg)) shell.openPath(arg);
         return true;
@@ -309,7 +320,10 @@ app.whenReady().then(async () => {
   fs.mkdirSync(userData, { recursive: true });
   settings.load(userData);
   log.init(userData);
-  log.i(`WiseTV ${app.getVersion()} starting (${process.platform} ${process.arch})`);
+  log.i(`WiseTV ${app.getVersion()} starting (${process.platform} ${process.arch}, Windows build ${require('os').release()})`);
+  log.i(`switches: ${process.argv.slice(1).join(' ')} dcomp-off=${app.commandLine.hasSwitch('disable-direct-composition')}`);
+  app.getGPUInfo('basic').then((g) => log.i(`gpu: ${JSON.stringify((g.gpuDevice || []).map((d) => ({ v: d.vendorId, d: d.deviceId, active: d.active, driver: d.driverVersion })))}`)).catch(() => {});
+  setTimeout(() => { try { log.i(`gpu features: ${JSON.stringify(app.getGPUFeatureStatus())}`); } catch (_) { /* ignore */ } }, 3000);
   overlayMode = decideOverlayMode();
   db.open(path.join(userData, 'wisetv.db'));
   Menu.setApplicationMenu(null);

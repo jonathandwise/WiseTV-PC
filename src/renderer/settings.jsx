@@ -95,13 +95,15 @@ export function SettingsScreen() {
         onClick={() => setSetting('closeToTray', !s.closeToTray)} />
       <SettingRow title="Start with Windows" value={s.startWithWindows ? 'On' : 'Off'} subtitle="Starts quietly by the clock when you sign in, ready for recordings"
         onClick={() => setSetting('startWithWindows', !s.startWithWindows)} />
-      <SettingRow title="Video drawing" value={info.overlayMode === 'shape' ? 'Compatibility' : 'Standard'} subtitle="Try Compatibility if the picture doesn't show behind the menus. Takes effect after restarting WiseTV."
-        onClick={() => { setSetting('overlayMode', info.overlayMode === 'shape' ? 'transparent' : 'shape'); showToast('Restart WiseTV for this to take effect'); }} />
+      <SettingRow title="Video drawing" value={info.overlayMode === 'transparent' ? 'See-through menus (experimental)' : 'Standard'}
+        subtitle="See-through menus show the picture faintly behind the guide and player menus, but may leave the picture black on some PCs. Takes effect after restarting WiseTV."
+        onClick={() => { setSetting('overlayMode', info.overlayMode === 'transparent' ? 'shape' : 'transparent'); showToast('Restart WiseTV for this to take effect'); }} />
 
       <SectionHeader>About</SectionHeader>
       <SettingRow title="WiseTV for Windows" value={`Version ${info.version}`} subtitle="Keyboard: arrows move · Enter selects · Esc goes back · M options · F full screen" onClick={() => {}} />
       <UpdateRow />
       <SettingRow title="Open the log file" subtitle="Useful if something isn't working" onClick={() => win('openPath', info.logFile)} />
+      <SettingRow title="Open WiseTV's data folder" subtitle="Holds wisetv.log and mpv.log (the video player's log), plus settings and the guide" onClick={() => win('openDataFolder')} />
       <SettingRow title="Quit WiseTV" onClick={() => win('quit')} />
       <div style={{ height: 40 }} />
       {plexDialog ? <PlexDialogs which={plexDialog} onChange={setPlexDialog} /> : null}
