@@ -289,3 +289,7 @@ body.shape-mode .side-panel { background: var(--bg); }
 .volume-control input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 7px; background: #fff; border: 0; }
 .volume-control input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .volume-num { width: 30px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.preview-controls { position: absolute; left: 6px; right: 6px; top: 6px; display: flex; align-items: center; gap: 4px; background: var(--scrim); border-radius: 6px; padding: 3px 6px; cursor: default; }
+.volume-control.compact { margin-right: 0; flex: 1; }
+.volume-control.compact input[type=range] { flex: 1; width: auto; min-width: 60px; }
+.preview-muted { position: absolute; right: 6px; top: 6px; background: var(--scrim); border-radius: 4px; padding: 3px 5px; display: flex; }

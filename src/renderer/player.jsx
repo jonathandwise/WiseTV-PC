@@ -4,7 +4,7 @@ import { call, win, useNow, useEvent, Fmt } from './lib';
 import { useStore, setState, getState, nav, tune, toggleFavorite, isFavorite } from './store';
 import { useKeys } from './keys';
 import { useFullVideo } from './video';
-import { MenuRow, ProgressLine, RecDot, Img, Spinner, Icon } from './components';
+import { MenuRow, ProgressLine, RecDot, Img, Spinner, Icon, VolumeControl } from './components';
 import { useGuideChannels, useProgramCache, useRecordState, groupTitle, programAt } from './guide';
 
 const RESIZE = [['fit', 'Fit'], ['zoom', 'Zoom'], ['stretch', 'Stretch']];
@@ -73,31 +73,6 @@ function VolumeOsd() {
 
 const volumeBy = (d) => call('player.setVolume', (getState().player.volume || 0) + d);
 
-/** Speaker button (mute) and a volume slider, for the player's top bar. */
-function VolumeControl() {
-  const vol = useStore((s) => s.player.volume);
-  const mute = useStore((s) => s.player.mute);
-  const [drag, setDrag] = useState(null);
-  const shown = drag != null ? drag : mute ? 0 : Math.round(vol || 0);
-  return (
-    <div class="volume-control" onClick={(e) => e.stopPropagation()} onDblClick={(e) => e.stopPropagation()}
-      onWheel={(e) => { e.stopPropagation(); volumeBy(e.deltaY < 0 ? 5 : -5); }}>
-      <button class="icon-btn big" title={mute ? 'Unmute (U)' : 'Mute (U)'} onClick={() => call('player.toggleMute')}>
-        <Icon name={mute || shown === 0 ? 'mute' : 'volume'} />
-      </button>
-      <input
-        type="range" min="0" max="100" step="1" value={Math.min(100, shown)}
-        title="Volume (+ / − or the mouse wheel)"
-        style={{ '--fill': `${Math.min(100, shown)}%` }}
-        onInput={(e) => { const v = Number(e.currentTarget.value); setDrag(v); call('player.setVolume', v); }}
-        onChange={() => setDrag(null)}
-        onMouseUp={() => setDrag(null)}
-        onKeyDown={(e) => e.stopPropagation()}
-      />
-      <span class="volume-num">{shown}</span>
-    </div>
-  );
-}
 
 function commonKeys(e) {
   switch (e.key) {

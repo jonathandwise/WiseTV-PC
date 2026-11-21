@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import { call, win } from './lib';
 import { useStore, setState, getState, nav, current, boot, showToast, tune } from './store';
 import { installKeys, setBackHandler } from './keys';
-import { startVideoLayout, setShapeMode } from './video';
+import { startVideoLayout, setShapeMode, installVideoMouse } from './video';
 import { CenterMessage, Icon } from './components';
 import { GuideScreen } from './guide';
 import { PlayerScreen } from './player';
@@ -184,6 +184,7 @@ function App() {
   setShapeMode(info.overlayMode === 'shape');
   document.body.classList.toggle('shape-mode', info.overlayMode === 'shape');
   startVideoLayout();
+  installVideoMouse(goBack);
   window.addEventListener('contextmenu', (e) => {
     if (!e.defaultPrevented && !(e.target && e.target.tagName === 'INPUT')) e.preventDefault();
   });

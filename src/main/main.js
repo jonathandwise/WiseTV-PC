@@ -298,6 +298,20 @@ async function startMpv() {
   const playback = require('./playback');
   mpv = new Mpv();
   playback.init(mpv);
+  // Mouse events mpv saw over the picture, re-sent to the interface at the pointer's position.
+  let lastMove = 0;
+  mpv.on('event', (ev) => {
+    if (ev.event !== 'client-message' || !Array.isArray(ev.args) || ev.args[0] !== 'wt-mouse') return;
+    const type = ev.args[1];
+    if (type === 'move') {
+      if (Date.now() - lastMove < 40) return;
+      lastMove = Date.now();
+    }
+    if (!uiWin || uiWin.isDestroyed()) return;
+    const p = screen.getCursorScreenPoint();
+    const b = uiWin.getContentBounds();
+    send('vmouse', { type, x: p.x - b.x, y: p.y - b.y, arg: ev.args[2] });
+  });
   const h = videoWin.getNativeWindowHandle();
   const wid = process.platform === 'win32' ? h.readBigUInt64LE(0).toString() : String(h.readUInt32LE(0));
   try {
@@ -306,6 +320,7 @@ async function startMpv() {
       volume: settings.volume,
       passthrough: settings.audioPassthrough,
       logFile: path.join(app.getPath('userData'), 'mpv.log'),
+      inputConf: path.join(app.getPath('userData'), 'mpv-input.conf'),
     });
   } catch (e) {
     log.i(`mpv failed to start: ${e.message}`);

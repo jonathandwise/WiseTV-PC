@@ -1,6 +1,8 @@
 // Small building blocks shared by every screen.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { useKeys } from './keys';
+import { call } from './lib';
+import { useStore, getState } from './store';
 
 export function Btn({ children, onClick, primary, selected, danger, disabled, autoFocus, className = '', title, small }) {
   const ref = useAutoFocus(autoFocus);
@@ -189,4 +191,30 @@ export function Icon({ name, size = 22 }) {
     case 'chevR': return <svg {...p}><path d="M9 6l6 6-6 6" /></svg>;
     default: return null;
   }
+}
+
+/** Speaker button (mute) and a volume slider, for the player's top bar. */
+export function VolumeControl({ compact = false }) {
+  const vol = useStore((s) => s.player.volume);
+  const mute = useStore((s) => s.player.mute);
+  const [drag, setDrag] = useState(null);
+  const shown = drag != null ? drag : mute ? 0 : Math.round(vol || 0);
+  return (
+    <div class={`volume-control ${compact ? 'compact' : ''}`} onClick={(e) => e.stopPropagation()} onDblClick={(e) => e.stopPropagation()}
+      onWheel={(e) => { e.stopPropagation(); call('player.setVolume', (getState().player.volume || 0) + (e.deltaY < 0 ? 5 : -5)); }}>
+      <button class={`icon-btn ${compact ? '' : 'big'}`} title={mute ? 'Unmute (U)' : 'Mute (U)'} onClick={() => call('player.toggleMute')}>
+        <Icon name={mute || shown === 0 ? 'mute' : 'volume'} />
+      </button>
+      <input
+        type="range" min="0" max="100" step="1" value={Math.min(100, shown)}
+        title="Volume (+ / − or the mouse wheel)"
+        style={{ '--fill': `${Math.min(100, shown)}%` }}
+        onInput={(e) => { const v = Number(e.currentTarget.value); setDrag(v); call('player.setVolume', v); }}
+        onChange={() => setDrag(null)}
+        onMouseUp={() => setDrag(null)}
+        onKeyDown={(e) => e.stopPropagation()}
+      />
+      <span class="volume-num">{shown}</span>
+    </div>
+  );
 }

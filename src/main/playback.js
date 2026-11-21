@@ -322,9 +322,11 @@ function setVideoRect(r) {
   } else if (r && r.mode === 'hidden') {
     l = 0.999; t = 0.999; rr = 0; b = 0;
   }
-  const key = [l, t, rr, b].map((v) => v.toFixed(4)).join(',');
+  const key = [l, t, rr, b].map((v) => v.toFixed(4)).join(',') + (r && r.mode);
   if (key === setVideoRect.last) return;
   setVideoRect.last = key;
+  // Full-screen video hides the pointer after a few seconds of no movement.
+  mpv.set('cursor-autohide', r && r.mode === 'full' ? 3000 : 'no').catch(() => {});
   mpv.set('video-margin-ratio-left', l).catch(() => {});
   mpv.set('video-margin-ratio-top', t).catch(() => {});
   mpv.set('video-margin-ratio-right', rr).catch(() => {});

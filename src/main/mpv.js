@@ -53,7 +53,7 @@ class Mpv extends EventEmitter {
       '--osd-level=0',
       '--input-default-bindings=no',
       '--input-vo-keyboard=no',
-      '--input-cursor=no',
+      '--input-cursor=yes',
       '--cursor-autohide=no',
       '--no-input-terminal',
       '--terminal=no',
@@ -71,6 +71,20 @@ class Mpv extends EventEmitter {
     ];
     if (opts.passthrough) args.push('--audio-spdif=ac3,eac3,dts');
     if (opts.logFile) args.push(`--log-file=${opts.logFile}`);
+    if (opts.inputConf) {
+      // Mouse over the picture reaches mpv's window, not the interface: pass it on.
+      fs.writeFileSync(opts.inputConf, [
+        'MBTN_LEFT script-message wt-mouse click',
+        'MBTN_LEFT_DBL script-message wt-mouse dblclick',
+        'MBTN_RIGHT script-message wt-mouse context',
+        'WHEEL_UP script-message wt-mouse wheel -1',
+        'WHEEL_DOWN script-message wt-mouse wheel 1',
+        'MOUSE_MOVE script-message wt-mouse move',
+        'MBTN_BACK script-message wt-mouse back',
+        '',
+      ].join('\n'));
+      args.push(`--input-conf=${opts.inputConf}`);
+    }
     if (process.env.WISETV_MPV_ARGS) args.push(...process.env.WISETV_MPV_ARGS.split(' ').filter(Boolean));
     const exe = this.exePath();
     log.i(`mpv start ${exe}`);

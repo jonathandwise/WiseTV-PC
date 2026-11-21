@@ -4,7 +4,7 @@ import { call, useQuery, useNow, Fmt, MIN, HOUR, DAY, floor30 } from './lib';
 import { useStore, setState, getState, tune, nav, toggleFavorite, isFavorite, setSetting, setActivePlaylist } from './store';
 import { useKeys } from './keys';
 import { useVideoHole } from './video';
-import { CenterMessage, ProgressLine, RecDot, Img, Btn, Icon } from './components';
+import { CenterMessage, ProgressLine, RecDot, Img, Btn, Icon, VolumeControl } from './components';
 
 const PX_PER_MIN = 5;
 const ROW_H = 46;
@@ -236,10 +236,35 @@ function GuideInfo({ channel, program: p, count, title, rec, now, onGroups }) {
 function Preview({ player }) {
   const live = player.nowPlaying && player.nowPlaying.type === 'live' ? player.nowPlaying : null;
   const ref = useVideoHole(true);
+  // Controls appear while the pointer is over the preview (or one of its buttons).
+  const [hover, setHover] = useState(false);
+  const timer = useRef(null);
+  const poke = () => {
+    setHover(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setHover(false), 2500);
+  };
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const openPlayer = () => { if (live) nav.push({ name: 'player' }); };
   return (
-    <div ref={ref} class="preview" onClick={() => { if (live) nav.push({ name: 'player' }); }} onDblClick={() => { if (live) nav.push({ name: 'player' }); }} title={live ? 'Click for full screen' : ''}>
+    <div
+      ref={ref}
+      class="preview"
+      onMouseMove={poke}
+      onMouseLeave={() => { clearTimeout(timer.current); timer.current = setTimeout(() => setHover(false), 400); }}
+      onClick={openPlayer}
+      onDblClick={openPlayer}
+      title={live && !hover ? 'Click for full screen' : ''}
+    >
       {live ? (
         <>
+          {hover ? (
+            <div class="preview-controls ov" onClick={(e) => e.stopPropagation()} onDblClick={(e) => e.stopPropagation()} onMouseMove={poke}>
+              <button class="icon-btn" title="Full screen" onClick={openPlayer}><Icon name="fullscreen" size={20} /></button>
+              <VolumeControl compact />
+            </div>
+          ) : null}
+          {player.mute && !hover ? <span class="preview-muted ov" title="Muted"><Icon name="mute" size={16} /></span> : null}
           <span class="preview-label ov">{live.channel.name}</span>
           {player.buffering ? <span class="preview-label ov loading">Loading…</span> : null}
         </>

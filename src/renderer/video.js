@@ -2,7 +2,7 @@
 // box, the whole window (player), or nowhere. Also cuts the matching hole in the backdrop and,
 // in "shape" mode, clips the interface window to its visible parts.
 import { useEffect, useRef } from 'preact/hooks';
-import { win } from './lib';
+import { win, on } from './lib';
 
 let hole = null; // element showing the video, or 'full'
 let shapeMode = false;
@@ -91,4 +91,21 @@ export function startVideoLayout() {
   };
   setInterval(loop, 120);
   window.addEventListener('resize', loop);
+}
+
+/**
+ * Mouse events that happened over the picture (they go to the video player's window, not to this
+ * page, in the standard drawing mode) are replayed on whatever element sits at that spot.
+ */
+export function installVideoMouse(onBack) {
+  on('vmouse', ({ type, x, y, arg }) => {
+    if (type === 'back') { onBack(); return; }
+    const el = document.elementFromPoint(x, y) || document.body;
+    const base = { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window };
+    if (type === 'move') el.dispatchEvent(new MouseEvent('mousemove', base));
+    else if (type === 'click') el.dispatchEvent(new MouseEvent('click', { ...base, detail: 1 }));
+    else if (type === 'dblclick') el.dispatchEvent(new MouseEvent('dblclick', { ...base, detail: 2 }));
+    else if (type === 'context') el.dispatchEvent(new MouseEvent('contextmenu', { ...base, button: 2 }));
+    else if (type === 'wheel') el.dispatchEvent(new WheelEvent('wheel', { ...base, deltaY: Number(arg) * 100 }));
+  });
 }

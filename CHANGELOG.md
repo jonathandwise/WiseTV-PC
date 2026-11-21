@@ -2,6 +2,11 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.3
+- Point at the TV guide's preview to get a full-screen button, a mute button and a volume slider
+- Fixed: the mouse didn't work over the video (moving it now brings back the player controls; clicking, double-clicking, right-clicking and the scroll wheel work too)
+- The pointer hides by itself after a few seconds of full-screen video
+
 ## 1.1.2
 - Fixed: black picture with working sound on Windows (newer Chromium hid the video player's window)
 - Settings: "Open WiseTV's data folder" to find the log files
