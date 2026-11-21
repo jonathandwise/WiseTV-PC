@@ -9,12 +9,13 @@ installed copies update themselves from the latest release of this repo.
 2. Bump `version` in `package.json` (semver; patch for fixes, minor for features).
 3. Add a `## <version>` section at the top of `CHANGELOG.md`: short, plain-language bullets. This text is shown to
    the user in the app's update dialog.
-4. Commit, then tag `v<version>` and push the commit and the tag. The "Build and release" workflow builds
-   `WiseTV-Setup-<version>.exe` and publishes the GitHub release; the workflow fails if the tag and package.json differ.
+4. Commit and push to `main`. The "Build and release" workflow sees a version with no release yet, builds
+   `WiseTV-Setup-<version>.exe` and publishes release `v<version>` (creating the tag). No tag push is needed
+   (tag pushes are refused from Claude sessions anyway). Check the run with `gh run list -R jonathandwise/WiseTV-PC`.
 5. Running copies find it at their next start (or within 6 hours), offer "Update now", download the installer and run
    it with `/S`; the installer closes WiseTV, updates it in place and starts it again.
 
-Never delete or re-use a published tag: apps compare versions, so a re-used tag would not reach them.
+Never delete or re-use a published version: apps compare version numbers, so a re-used one would not reach them.
 
 ## Layout
 - `src/main/` – main process. `main.js` (windows, tray, IPC), `api.js` (every call the UI makes), `db.js`

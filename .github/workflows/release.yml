@@ -1,11 +1,12 @@
 name: Build and release
 
-# Pushing a tag like v1.2.0 builds the Windows installer and publishes it as a GitHub release.
-# Installed copies of WiseTV check the latest release when they start and offer the update.
-# "Run workflow" (manual) only builds and keeps the files as a downloadable artifact.
+# When package.json on main has a version with no release yet, this builds the Windows installer and
+# publishes it as release v<version> (which also creates the tag). Installed copies of WiseTV check the
+# latest release when they start and offer the update. "Run workflow" does the same on demand.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths: ['package.json']
   workflow_dispatch:
 
 permissions:
@@ -20,42 +21,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Is this version already released?
+        id: ver
+        run: |
+          V=$(node -p "require('./package.json').version")
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          if gh release view "v$V" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "v$V is already released; nothing to do."
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-node@v4
+        if: steps.ver.outputs.new == 'true'
         with:
           node-version: 22
           cache: npm
 
       - name: Install build tools
+        if: steps.ver.outputs.new == 'true'
         run: sudo apt-get update && sudo apt-get install -y nsis p7zip-full zip
 
       - name: Install packages
+        if: steps.ver.outputs.new == 'true'
         run: npm ci
 
       - name: Download Electron for Windows and mpv
+        if: steps.ver.outputs.new == 'true'
         run: bash scripts/fetch-vendor.sh
 
-      - name: Check the tag matches package.json
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          V="v$(node -p "require('./package.json').version")"
-          if [ "$V" != "$GITHUB_REF_NAME" ]; then
-            echo "Tag $GITHUB_REF_NAME does not match package.json version $V"; exit 1
-          fi
-
       - name: Build installer
+        if: steps.ver.outputs.new == 'true'
         run: node package-win.js
 
       - name: Publish release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: steps.ver.outputs.new == 'true'
         run: |
-          V=$(node -p "require('./package.json').version")
+          V=${{ steps.ver.outputs.version }}
           node scripts/release-notes.js "$V" > notes.md
           gh release create "v$V" "build/WiseTV-Setup-$V.exe" "build/WiseTV-$V-portable.zip" \
-            --title "WiseTV $V" --notes-file notes.md
-
-      - name: Keep the build (manual runs)
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: WiseTV-windows
-          path: build/WiseTV-Setup-*.exe
+            --target "$GITHUB_SHA" --title "WiseTV $V" --notes-file notes.md

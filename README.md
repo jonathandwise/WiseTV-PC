@@ -9,11 +9,8 @@ and run it. After that, WiseTV checks for new versions by itself and offers to u
 
 ## Releasing a new version
 
-Bump `version` in `package.json`, add a section to `CHANGELOG.md`, commit, then tag and push:
-
-    git tag v1.2.0 && git push && git push --tags
-
-GitHub Actions ("Build and release") builds the installer and publishes the release.
+Bump `version` in `package.json`, add a section to `CHANGELOG.md`, commit and push to `main`.
+GitHub Actions ("Build and release") notices the new version, builds the installer and publishes the release.
 
 ## Build locally
 
