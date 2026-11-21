@@ -2,6 +2,10 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.4
+- Click the picture while watching live TV to get a row of controls: pause/play, channel up and down, last channel, volume, record, channel list, back to the TV Guide, options (audio, subtitles, picture size) and full screen on/off
+- The controls stay up while the channel is paused or while the pointer is over them
+
 ## 1.1.3
 - Point at the TV guide's preview to get a full-screen button, a mute button and a volume slider
 - Fixed: the mouse didn't work over the video (moving it now brings back the player controls; clicking, double-clicking, right-clicking and the scroll wheel work too)

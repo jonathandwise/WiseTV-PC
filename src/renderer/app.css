@@ -203,7 +203,7 @@ body.shape-mode .player { background: transparent; }
 .player.no-cursor, .player.no-cursor * { cursor: none !important; }
 .player-topbar { position: absolute; left: 0; right: 0; top: 0; height: 64px; display: flex; align-items: center; gap: 6px; padding: 0 16px; background: linear-gradient(rgba(13, 16, 21, 0.75), rgba(13, 16, 21, 0)); }
 body.shape-mode .player-topbar { background: var(--bg); height: 56px; }
-.info-banner { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 20px; padding: 56px 40px 28px; background: linear-gradient(rgba(13, 16, 21, 0), rgba(13, 16, 21, 0.9) 30%, rgba(13, 16, 21, 0.97)); }
+.info-banner { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: stretch; gap: 16px; padding: 56px 40px 28px; background: linear-gradient(rgba(13, 16, 21, 0), rgba(13, 16, 21, 0.9) 30%, rgba(13, 16, 21, 0.97)); }
 body.shape-mode .info-banner, body.shape-mode .vod-controls { background: var(--bg); padding-top: 22px; }
 .banner-logo { width: 110px; height: 70px; flex: 0 0 110px; background: var(--panel2); border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 8px; font-size: 22px; }
 .banner-logo img { max-width: 100%; max-height: 100%; }
@@ -293,3 +293,13 @@ body.shape-mode .side-panel { background: var(--bg); }
 .volume-control.compact { margin-right: 0; flex: 1; }
 .volume-control.compact input[type=range] { flex: 1; width: auto; min-width: 60px; }
 .preview-muted { position: absolute; right: 6px; top: 6px; background: var(--scrim); border-radius: 4px; padding: 3px 5px; display: flex; }
+
+/* Live player control row (shown when you click or move the mouse over the picture) */
+.banner-main { display: flex; align-items: center; gap: 20px; }
+.live-controls { display: flex; align-items: center; gap: 4px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 12px; }
+.ctl-btn { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 76px; height: 60px; padding: 4px 8px;
+  background: transparent; border: 0; border-radius: 8px; color: var(--text); cursor: pointer; font: inherit; font-size: 12px; }
+.ctl-btn:hover { background: rgba(255, 255, 255, 0.12); }
+.ctl-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ctl-btn span { white-space: nowrap; color: var(--dim, #c8ccd2); }
+.ctl-volume { margin-left: 10px; }

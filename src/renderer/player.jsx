@@ -28,10 +28,10 @@ export function PlayerScreen() {
 function useAutoHide(ms, keepOpen) {
   const [visible, setVisible] = useState(true);
   const timer = useRef(null);
-  const poke = () => {
+  const poke = (forMs) => {
     setVisible(true);
     clearTimeout(timer.current);
-    timer.current = setTimeout(() => setVisible(false), ms);
+    timer.current = setTimeout(() => setVisible(false), typeof forMs === 'number' ? forMs : ms);
   };
   useEffect(() => { poke(); return () => clearTimeout(timer.current); }, []);
   return [visible || keepOpen, poke];
@@ -97,8 +97,9 @@ function LivePlayer({ channel }) {
   const [pending, setPending] = useState(null);
   const [digits, setDigits] = useState('');
   const [message, setMessage] = useMessage();
+  const [hover, setHover] = useState(false);
   const [bannerVisible, poke] = useAutoHide(5000, false);
-  const [mouseActive, pokeMouse] = useAutoHide(3000, listOpen || menuOpen);
+  const [mouseActive, pokeMouse] = useAutoHide(3500, listOpen || menuOpen || hover || st.paused);
   const curIndex = channels.findIndex((c) => c.id === channel.id);
   const shown = pending != null && channels[pending] ? channels[pending] : channel;
 
@@ -156,9 +157,9 @@ function LivePlayer({ channel }) {
   return (
     <div
       class={`player ${showControls || listOpen || menuOpen ? '' : 'no-cursor'}`}
-      onMouseMove={() => { pokeMouse(); poke(); }}
-      onClick={(e) => { if (e.target === e.currentTarget) poke(); }}
-      onDblClick={(e) => { if (e.target === e.currentTarget) win('toggleFullscreen'); }}
+      onMouseMove={(e) => { setHover(!!(e.target.closest && e.target.closest('.info-banner'))); pokeMouse(); poke(); }}
+      onClick={(e) => { if (!(e.target.closest && e.target.closest('.ov'))) { pokeMouse(8000); poke(8000); } }}
+      onDblClick={(e) => { if (!(e.target.closest && e.target.closest('.ov'))) win('toggleFullscreen'); }}
       onContextMenu={(e) => { e.preventDefault(); setMenuOpen(true); }}
       onWheel={(e) => { volumeBy(e.deltaY < 0 ? 5 : -5); }}
     >
@@ -169,15 +170,21 @@ function LivePlayer({ channel }) {
       <VolumeOsd />
       {showControls ? (
         <>
-          <div class="player-topbar ov">
-            <button class="icon-btn big" title="Back to the guide (Esc)" onClick={() => nav.pop()}><Icon name="back" /></button>
-            <span class="grow" />
-            <VolumeControl />
-            <button class="icon-btn big" title="Channel list (Enter)" onClick={() => setListOpen(true)}><Icon name="list" /></button>
-            <button class="icon-btn big" title="Options (M or right-click)" onClick={() => setMenuOpen(true)}><Icon name="menu" /></button>
-            <button class="icon-btn big" title="Full screen (F)" onClick={() => win('toggleFullscreen')}><Icon name={fullscreen ? 'exitfull' : 'fullscreen'} /></button>
-          </div>
-          <InfoBanner channel={shown} viaRelay={st.viaRelay && pending == null} />
+          <InfoBanner channel={shown} viaRelay={st.viaRelay && pending == null}>
+            <div class="live-controls" onClick={(e) => e.stopPropagation()} onDblClick={(e) => e.stopPropagation()}>
+              <CtlButton icon={st.paused ? 'play' : 'pause'} label={st.paused ? 'Play' : 'Pause'} title="Pause / play (Space)" onClick={() => call('player.togglePause')} />
+              <CtlButton icon="chevU" label="Channel up" title="Previous channel in the list (↑)" onClick={() => step(-1)} />
+              <CtlButton icon="chevD" label="Channel down" title="Next channel in the list (↓)" onClick={() => step(1)} />
+              {st.previousChannel ? <CtlButton icon="swap" label="Last channel" title={`Back to ${st.previousChannel.name} (P)`} onClick={() => tune(st.previousChannel, true)} /> : null}
+              <div class="ctl-volume"><VolumeControl /></div>
+              <span class="grow" />
+              <CtlButton icon="rec" label="Record" title="Record this programme or series" onClick={() => setState({ programMenu: { channel, program: programAt(channel, Date.now()) } })} />
+              <CtlButton icon="list" label="Channels" title="Channel list (Enter)" onClick={() => setListOpen(true)} />
+              <CtlButton icon="guide" label="TV Guide" title="Back to the guide; the channel keeps playing in the corner (Esc)" onClick={() => nav.pop()} />
+              <CtlButton icon="menu" label="Options" title="Audio, subtitles, picture size and more (M or right-click)" onClick={() => setMenuOpen(true)} />
+              <CtlButton icon={fullscreen ? 'exitfull' : 'fullscreen'} label={fullscreen ? 'Exit full screen' : 'Full screen'} title="Full screen on / off (F)" onClick={() => win('toggleFullscreen')} />
+            </div>
+          </InfoBanner>
         </>
       ) : null}
       {listOpen ? (
@@ -195,7 +202,16 @@ function LivePlayer({ channel }) {
   );
 }
 
-function InfoBanner({ channel: ch, viaRelay }) {
+function CtlButton({ icon, label, title, onClick }) {
+  return (
+    <button class="ctl-btn" title={title} onClick={onClick}>
+      <Icon name={icon} size={24} />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function InfoBanner({ channel: ch, viaRelay, children }) {
   const now = useNow(10000);
   useProgramCache([ch]);
   const rec = useRecordState();
@@ -209,6 +225,7 @@ function InfoBanner({ channel: ch, viaRelay }) {
   const recording = rec.recordingNowUrls.has(ch.url);
   return (
     <div class="info-banner ov">
+      <div class="banner-main">
       <div class="banner-logo">{ch.logo ? <Img src={ch.logo} fit="contain" /> : <span>{ch.number}</span>}</div>
       <div class="grow minw0">
         <div class="row center-v gap8">
@@ -232,6 +249,8 @@ function InfoBanner({ channel: ch, viaRelay }) {
         <div class="clock">{Fmt.time(now)}</div>
         <div class="muted small">↑↓ channels · Enter list · M options · P previous</div>
       </div>
+      </div>
+      {children}
     </div>
   );
 }

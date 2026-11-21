@@ -188,6 +188,9 @@ export function Icon({ name, size = 22 }) {
     case 'star': return <svg {...p}><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" /></svg>;
     case 'rec': return <svg {...p}><circle cx="12" cy="12" r="6" fill="#E5484D" stroke="none" /></svg>;
     case 'chevL': return <svg {...p}><path d="M15 6l-6 6 6 6" /></svg>;
+    case 'chevU': return <svg {...p}><path d="M6 15l6-6 6 6" /></svg>;
+    case 'chevD': return <svg {...p}><path d="M6 9l6 6 6-6" /></svg>;
+    case 'swap': return <svg {...p}><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" /></svg>;
     case 'chevR': return <svg {...p}><path d="M9 6l6 6-6 6" /></svg>;
     default: return null;
   }
