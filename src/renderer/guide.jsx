@@ -279,16 +279,33 @@ function Preview({ player }) {
 }
 
 function GroupsPanel({ groups, current, onPick, onPlaylist, onClose }) {
-  const entries = [['__fav__', 'Favorites'], ['__all__', 'All channels'], ...groups.map((g) => [g.categoryId, g.name])];
+  const all = [['__fav__', 'Favorites'], ['__all__', 'All channels'], ...groups.map((g) => [g.categoryId, g.name])];
   const playlists = useStore((s) => s.playlists) || [];
   const pid = useStore((s) => s.playlistId);
+  const [filter, setFilter] = useState('');
   const box = useRef(null);
+  const input = useRef(null);
+  const showFilter = groups.length > 12;
+  const q = filter.trim().toLowerCase();
+  const entries = q ? all.filter(([, name]) => String(name).toLowerCase().includes(q)) : all;
   useEffect(() => {
-    const el = box.current && (box.current.querySelector('.selected') || box.current.querySelector('[data-nav]'));
+    const el = box.current && (box.current.querySelector('.selected') || box.current.querySelector('.list-item'));
     if (el) { el.focus(); el.scrollIntoView({ block: 'center' }); }
   }, []);
+  const typing = () => document.activeElement === input.current;
   useKeys((e) => {
-    if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'ArrowRight') { onClose(); return true; }
+    if (e.key === 'Escape') { if (typing() && filter) { setFilter(''); return true; } onClose(); return true; }
+    if (typing()) {
+      if (e.key === 'ArrowDown') { const el = box.current.querySelector('.groups-list .list-item'); if (el) el.focus(); return true; }
+      if (e.key === 'Enter') { if (entries.length) onPick(entries[0][0]); return true; }
+      return false;
+    }
+    if (e.key === 'Backspace' || e.key === 'ArrowRight') { onClose(); return true; }
+    // Typing a letter jumps to the filter box.
+    if (showFilter && e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.altKey && !e.metaKey && input.current) {
+      input.current.focus();
+      return false;
+    }
     return false;
   });
   return (
@@ -301,12 +318,24 @@ function GroupsPanel({ groups, current, onPick, onPlaylist, onClose }) {
               {p.id === pid ? '● ' : ''}{p.name}
             </button>
           ))}
-          <div class="panel-label">Channel groups</div>
+          <div class="panel-label">Channel groups{showFilter ? ` (${groups.length})` : ''}</div>
         </>
       ) : null}
-      {entries.map(([id, name]) => (
-        <button key={id} data-nav class={`list-item ${id === current ? 'selected' : ''}`} onClick={() => onPick(id)}>{name}</button>
-      ))}
+      {showFilter ? (
+        <div class="groups-filter">
+          <input
+            ref={input} data-nav type="text" placeholder="Find a group…" value={filter}
+            onInput={(e) => setFilter(e.currentTarget.value)}
+          />
+          {filter ? <button class="icon-btn" title="Clear" onClick={() => { setFilter(''); input.current && input.current.focus(); }}>✕</button> : null}
+        </div>
+      ) : null}
+      <div class="groups-list">
+        {entries.map(([id, name]) => (
+          <button key={id} data-nav class={`list-item ${id === current ? 'selected' : ''}`} title={name} onClick={() => onPick(id)}>{name}</button>
+        ))}
+        {q && !entries.length ? <div class="muted small" style={{ padding: 8 }}>No groups match “{filter.trim()}”</div> : null}
+      </div>
     </div>
   );
 }

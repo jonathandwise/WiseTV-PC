@@ -2,6 +2,11 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.5
+- Fixed: with a big playlist (hundreds of channel groups) the TV Guide's playlist and group list squashed its rows so the names couldn't be read
+- A "Find a group" box appears at the top of that list when there are lots of groups; just start typing, press Enter to pick the first match
+- The list is a little wider, and pointing at a long group name shows it in full
+
 ## 1.1.4
 - Click the picture while watching live TV to get a row of controls: pause/play, channel up and down, last channel, volume, record, channel list, back to the TV Guide, options (audio, subtitles, picture size) and full screen on/off
 - The controls stay up while the channel is paused or while the pointer is over them
