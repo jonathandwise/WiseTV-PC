@@ -412,6 +412,11 @@ const handlers = {
   },
 };
 
+// Short notes from the interface for wisetv.log (troubleshooting).
+let uiLogCount = 0;
+setInterval(() => { uiLogCount = 0; }, 60000).unref();
+handlers['log.ui'] = (msg) => { if (++uiLogCount <= 120) log.i(`ui: ${String(msg).slice(0, 300)}`); };
+
 async function call(method, args) {
   const h = handlers[method];
   if (!h) throw new Error(`Unknown call ${method}`);

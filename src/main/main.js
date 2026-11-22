@@ -301,9 +301,15 @@ async function startMpv() {
   // Mouse events mpv saw over the picture, re-sent to the interface at the pointer's position.
   let lastMove = 0;
   let lastPt = null;
+  const moveStats = { seen: 0, sent: 0 };
+  setInterval(() => {
+    if (moveStats.seen) log.i(`mouse over video: ${moveStats.seen} moves reported by mpv, ${moveStats.sent} passed on (last 10 s)`);
+    moveStats.seen = 0; moveStats.sent = 0;
+  }, 10000).unref();
   mpv.on('event', (ev) => {
     if (ev.event !== 'client-message' || !Array.isArray(ev.args) || ev.args[0] !== 'wt-mouse') return;
     const type = ev.args[1];
+    if (type === 'move') moveStats.seen++;
     if (type === 'move') {
       if (Date.now() - lastMove < 40) return;
       lastMove = Date.now();
@@ -318,6 +324,8 @@ async function startMpv() {
       if (at === lastPt) return;
       lastPt = at;
     }
+    if (type === 'move') moveStats.sent++;
+    else log.i(`mouse over video: ${ev.args.slice(1).join(' ')} at ${p.x - b.x},${p.y - b.y} (screen ${p.x},${p.y}; window ${b.x},${b.y} ${b.width}x${b.height})`);
     send('vmouse', { type, x: p.x - b.x, y: p.y - b.y, arg: ev.args[2] });
   });
   const h = videoWin.getNativeWindowHandle();

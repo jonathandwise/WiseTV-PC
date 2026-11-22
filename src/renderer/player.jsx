@@ -103,6 +103,8 @@ function LivePlayer({ channel }) {
   // pointer. (Windows reports mouse moves when nothing moved, so moves must not keep them up.)
   const [bannerVisible, poke, hideBanner] = useAutoHide(5000, false);
   const [cursorActive, pokeCursor] = useAutoHide(3000, listOpen || menuOpen);
+  const shownAt = useRef(0);
+  const travel = useRef({ x: null, y: null, dist: 0, since: 0 });
   const curIndex = channels.findIndex((c) => c.id === channel.id);
   const shown = pending != null && channels[pending] ? channels[pending] : channel;
 
@@ -157,16 +159,40 @@ function LivePlayer({ channel }) {
   }, !listOpen && !menuOpen);
 
   const showControls = bannerVisible && !listOpen && !menuOpen;
+  useEffect(() => { if (showControls) shownAt.current = Date.now(); }, [showControls]);
   const inOverlay = (e) => !!(e.target.closest && e.target.closest('.ov'));
+  const describe = (e) => `${e.isTrusted ? 'direct' : 'from video'} at ${e.clientX},${e.clientY} on ${e.target.tagName.toLowerCase()}.${String(e.target.className || '').split(' ')[0]}`;
+  // A click on the picture shows the controls, a later one hides them. Two clicks within half a
+  // second count as one, in case the same click arrives twice.
+  const onPictureClick = (e) => {
+    if (inOverlay(e)) return;
+    let what;
+    if (!showControls) { poke(8000); what = 'show'; }
+    else if (Date.now() - shownAt.current > 500) { hideBanner(); what = 'hide'; }
+    else { poke(8000); what = 'keep (just shown)'; }
+    call('log.ui', `player click ${describe(e)} -> ${what}`).catch(() => {});
+  };
+  // Moving the mouse a real distance (not the zero-distance moves Windows invents) shows them too.
+  const onMove = (e) => {
+    const t = travel.current;
+    const now = Date.now();
+    if (t.x != null && now - t.since < 600) t.dist += Math.abs(e.clientX - t.x) + Math.abs(e.clientY - t.y);
+    else { t.dist = 0; t.since = now; }
+    t.x = e.clientX; t.y = e.clientY;
+    if (pointerMoved(e)) pokeCursor();
+    const overBar = e.target.closest && e.target.closest('.info-banner');
+    if (showControls) { if (overBar && pointerMoved(e)) poke(8000); return; }
+    if (t.dist >= 40) {
+      t.dist = 0; t.since = now;
+      poke(4000);
+      call('log.ui', `player mouse moved ${describe(e)} -> show`).catch(() => {});
+    }
+  };
   return (
     <div
       class={`player ${showControls || cursorActive || listOpen || menuOpen ? '' : 'no-cursor'}`}
-      onMouseMove={(e) => {
-        if (!pointerMoved(e)) return;
-        pokeCursor();
-        if (bannerVisible && e.target.closest && e.target.closest('.info-banner')) poke(8000);
-      }}
-      onClick={(e) => { if (!inOverlay(e)) { if (showControls) hideBanner(); else poke(8000); } }}
+      onMouseMove={onMove}
+      onClick={onPictureClick}
       onDblClick={(e) => { if (!(e.target.closest && e.target.closest('.ov'))) win('toggleFullscreen'); }}
       onContextMenu={(e) => { e.preventDefault(); setMenuOpen(true); }}
       onWheel={(e) => { volumeBy(e.deltaY < 0 ? 5 : -5); }}

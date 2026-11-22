@@ -2,6 +2,10 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.9
+- Fixed: after 1.1.8 the live TV controls wouldn't come back. Clicking the picture shows them again (click again to hide them), and moving the mouse across the picture brings them up too
+- WiseTV now notes mouse clicks over the video in its log file, to help track down any remaining mouse problems
+
 ## 1.1.8
 - Fixed (second try): the live TV controls now go away 8 seconds after you click the picture. Moving the mouse no longer brings them up; it only shows the pointer
 - Click the picture again to hide the controls straight away
