@@ -54,6 +54,7 @@ class Mpv extends EventEmitter {
       '--input-default-bindings=no',
       '--input-vo-keyboard=no',
       '--input-cursor=yes',
+      '--window-dragging=no',
       '--cursor-autohide=no',
       '--no-input-terminal',
       '--terminal=no',
@@ -79,7 +80,7 @@ class Mpv extends EventEmitter {
         'MBTN_RIGHT script-message wt-mouse context',
         'WHEEL_UP script-message wt-mouse wheel -1',
         'WHEEL_DOWN script-message wt-mouse wheel 1',
-        'MOUSE_MOVE script-message wt-mouse move',
+        'MOUSE_MOVE expand-properties script-message wt-mouse move ${mouse-pos/x} ${mouse-pos/y}',
         'MBTN_BACK script-message wt-mouse back',
         '',
       ].join('\n'));

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { call, win, useNow, useEvent, Fmt } from './lib';
 import { useStore, setState, getState, nav, tune, toggleFavorite, isFavorite } from './store';
 import { useKeys } from './keys';
-import { useFullVideo } from './video';
+import { useFullVideo, pointerMoved } from './video';
 import { MenuRow, ProgressLine, RecDot, Img, Spinner, Icon, VolumeControl } from './components';
 import { useGuideChannels, useProgramCache, useRecordState, groupTitle, programAt } from './guide';
 
@@ -157,7 +157,7 @@ function LivePlayer({ channel }) {
   return (
     <div
       class={`player ${showControls || listOpen || menuOpen ? '' : 'no-cursor'}`}
-      onMouseMove={(e) => { setHover(!!(e.target.closest && e.target.closest('.info-banner'))); pokeMouse(); poke(); }}
+      onMouseMove={(e) => { setHover(!!(e.target.closest && e.target.closest('.info-banner'))); if (pointerMoved(e)) { pokeMouse(); poke(); } }}
       onClick={(e) => { if (!(e.target.closest && e.target.closest('.ov'))) { pokeMouse(8000); poke(8000); } }}
       onDblClick={(e) => { if (!(e.target.closest && e.target.closest('.ov'))) win('toggleFullscreen'); }}
       onContextMenu={(e) => { e.preventDefault(); setMenuOpen(true); }}
@@ -509,7 +509,7 @@ function VodPlayer({ item }) {
   return (
     <div
       class={`player ${visible ? '' : 'no-cursor'}`}
-      onMouseMove={poke}
+      onMouseMove={(e) => { if (pointerMoved(e)) poke(); }}
       onClick={(e) => { if (e.target === e.currentTarget) { call('player.togglePause'); poke(); } }}
       onDblClick={(e) => { if (e.target === e.currentTarget) { call('player.togglePause'); win('toggleFullscreen'); } }}
       onContextMenu={(e) => { e.preventDefault(); setMenuOpen(true); }}

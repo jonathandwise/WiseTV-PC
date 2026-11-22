@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/ho
 import { call, useQuery, useNow, Fmt, MIN, HOUR, DAY, floor30 } from './lib';
 import { useStore, setState, getState, tune, nav, toggleFavorite, isFavorite, setSetting, setActivePlaylist } from './store';
 import { useKeys } from './keys';
-import { useVideoHole } from './video';
+import { useVideoHole, pointerMoved } from './video';
 import { CenterMessage, ProgressLine, RecDot, Img, Btn, Icon, VolumeControl } from './components';
 
 const PX_PER_MIN = 5;
@@ -250,7 +250,7 @@ function Preview({ player }) {
     <div
       ref={ref}
       class="preview"
-      onMouseMove={poke}
+      onMouseMove={(e) => { if (pointerMoved(e)) poke(); }}
       onMouseLeave={() => { clearTimeout(timer.current); timer.current = setTimeout(() => setHover(false), 400); }}
       onClick={openPlayer}
       onDblClick={openPlayer}
@@ -259,7 +259,7 @@ function Preview({ player }) {
       {live ? (
         <>
           {hover ? (
-            <div class="preview-controls ov" onClick={(e) => e.stopPropagation()} onDblClick={(e) => e.stopPropagation()} onMouseMove={poke}>
+            <div class="preview-controls ov" onClick={(e) => e.stopPropagation()} onDblClick={(e) => e.stopPropagation()} onMouseMove={(e) => { if (pointerMoved(e)) poke(); }}>
               <button class="icon-btn" title="Full screen" onClick={openPlayer}><Icon name="fullscreen" size={20} /></button>
               <VolumeControl compact />
             </div>

@@ -300,6 +300,7 @@ async function startMpv() {
   playback.init(mpv);
   // Mouse events mpv saw over the picture, re-sent to the interface at the pointer's position.
   let lastMove = 0;
+  let lastPt = null;
   mpv.on('event', (ev) => {
     if (ev.event !== 'client-message' || !Array.isArray(ev.args) || ev.args[0] !== 'wt-mouse') return;
     const type = ev.args[1];
@@ -310,6 +311,13 @@ async function startMpv() {
     if (!uiWin || uiWin.isDestroyed()) return;
     const p = screen.getCursorScreenPoint();
     const b = uiWin.getContentBounds();
+    // Windows reports a move when windows change shape over a pointer that hasn't moved; skip those.
+    // mpv's own pointer position is passed along with moves, so those can be told apart.
+    if (type === 'move' && /^\d+$/.test(ev.args[2] || '') && /^\d+$/.test(ev.args[3] || '')) {
+      const at = `${ev.args[2]},${ev.args[3]}`;
+      if (at === lastPt) return;
+      lastPt = at;
+    }
     send('vmouse', { type, x: p.x - b.x, y: p.y - b.y, arg: ev.args[2] });
   });
   const h = videoWin.getNativeWindowHandle();

@@ -97,6 +97,21 @@ export function startVideoLayout() {
  * Mouse events that happened over the picture (they go to the video player's window, not to this
  * page, in the standard drawing mode) are replayed on whatever element sits at that spot.
  */
+// Windows sends a "mouse moved" message whenever a window changes shape or the pointer is
+// hidden under a mouse that hasn't moved. Showing or hiding the controls does exactly that, so
+// treating those as real movement kept the controls up for ever. Only count actual movement.
+let lastMoveX = null;
+let lastMoveY = null;
+export function pointerMoved(e) {
+  if (!e.isTrusted) return true; // re-sent from the video window; already checked there
+  if (e.__wtMoved !== undefined) return e.__wtMoved;
+  const moved = e.clientX !== lastMoveX || e.clientY !== lastMoveY;
+  lastMoveX = e.clientX;
+  lastMoveY = e.clientY;
+  try { e.__wtMoved = moved; } catch { /* ignore */ }
+  return moved;
+}
+
 export function installVideoMouse(onBack) {
   on('vmouse', ({ type, x, y, arg }) => {
     if (type === 'back') { onBack(); return; }

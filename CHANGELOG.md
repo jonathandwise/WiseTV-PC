@@ -2,6 +2,9 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.6
+- Fixed: the controls you get by clicking the picture (and the guide preview's buttons) didn't go away on their own. Windows reports a "mouse moved" every time the controls appear or disappear, even when the mouse is still, and WiseTV took that as you moving it. Now only real mouse movement keeps them up
+
 ## 1.1.5
 - Fixed: with a big playlist (hundreds of channel groups) the TV Guide's playlist and group list squashed its rows so the names couldn't be read
 - A "Find a group" box appears at the top of that list when there are lots of groups; just start typing, press Enter to pick the first match
