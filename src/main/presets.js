@@ -2,6 +2,7 @@
 // Free channel playlists offered on the Add playlist screen.
 module.exports = [
   { id: 'iptv-org', name: 'IPTV-org (worldwide)', url: 'https://iptv-org.github.io/iptv/index.m3u', note: 'Thousands of free public channels from around the world. Large: takes a while to load.' },
+  { id: 'free-tv', name: 'Free-TV (worldwide)', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8', note: 'About 2,200 free-to-air channels from around the world, grouped by country. The TV guide is large: the first load takes a while.' },
   { id: 'samsung', name: 'Samsung TV Plus', url: 'https://apsattv.com/ssungusa.m3u', note: 'Free channels from Samsung TV Plus (US)' },
   { id: 'xumo', name: 'XUMO', url: 'https://www.apsattv.com/xumo.m3u', note: 'Free channels from XUMO Play' },
   { id: 'localnow', name: 'Local Now', url: 'https://www.apsattv.com/localnow.m3u', note: 'Local news, weather and free channels' },

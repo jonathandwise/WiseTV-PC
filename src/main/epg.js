@@ -168,7 +168,18 @@ function urlsFor(pl) {
   addAll(pl.epgUrl);
   if (pl.type === 'xtream') urls.push(new XtreamApi(pl.url, pl.username, pl.password, pl.userAgent).epgUrl());
   else addAll(pl.m3uEpgUrl);
-  return [...new Set(urls)];
+  return trimSources([...new Set(urls)]);
+}
+
+/**
+ * epgshare01's "ALL_SOURCES" file already contains every one of its per-country files, so when a
+ * playlist lists both (Free-TV lists about 100), only the combined one is downloaded.
+ */
+function trimSources(urls) {
+  const isShare = (u) => /epgshare01\.online\//i.test(u);
+  const all = urls.filter((u) => isShare(u) && /ALL_SOURCES/i.test(u));
+  if (!all.length) return urls;
+  return urls.filter((u) => !isShare(u) || all.includes(u));
 }
 
 const visibleChannelsSql = `SELECT * FROM channels WHERE playlistId = ? AND hidden = 0

@@ -2,6 +2,10 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.7
+- New free playlist: Free-TV (worldwide), about 2,200 free-to-air channels grouped by country (Settings → Playlists → + Free channels)
+- Playlists that list both a combined TV guide and its per-country parts now download only the combined one, so the guide loads much faster
+
 ## 1.1.6
 - Fixed: the controls you get by clicking the picture (and the guide preview's buttons) didn't go away on their own. Windows reports a "mouse moved" every time the controls appear or disappear, even when the mouse is still, and WiseTV took that as you moving it. Now only real mouse movement keeps them up
 
