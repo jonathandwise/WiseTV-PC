@@ -33,8 +33,9 @@ function useAutoHide(ms, keepOpen) {
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setVisible(false), typeof forMs === 'number' ? forMs : ms);
   };
+  const hide = () => { clearTimeout(timer.current); setVisible(false); };
   useEffect(() => { poke(); return () => clearTimeout(timer.current); }, []);
-  return [visible || keepOpen, poke];
+  return [visible || keepOpen, poke, hide];
 }
 
 function useMessage() {
@@ -97,9 +98,11 @@ function LivePlayer({ channel }) {
   const [pending, setPending] = useState(null);
   const [digits, setDigits] = useState('');
   const [message, setMessage] = useMessage();
-  const [hover, setHover] = useState(false);
-  const [bannerVisible, poke] = useAutoHide(5000, false);
-  const [mouseActive, pokeMouse] = useAutoHide(3500, listOpen || menuOpen || hover || st.paused);
+  // The info banner and control row: shown by a click on the picture (a second click hides them),
+  // by keys and by changing channel; they go away by themselves. Moving the mouse only shows the
+  // pointer. (Windows reports mouse moves when nothing moved, so moves must not keep them up.)
+  const [bannerVisible, poke, hideBanner] = useAutoHide(5000, false);
+  const [cursorActive, pokeCursor] = useAutoHide(3000, listOpen || menuOpen);
   const curIndex = channels.findIndex((c) => c.id === channel.id);
   const shown = pending != null && channels[pending] ? channels[pending] : channel;
 
@@ -153,12 +156,17 @@ function LivePlayer({ channel }) {
     }
   }, !listOpen && !menuOpen);
 
-  const showControls = (bannerVisible || mouseActive) && !listOpen && !menuOpen;
+  const showControls = bannerVisible && !listOpen && !menuOpen;
+  const inOverlay = (e) => !!(e.target.closest && e.target.closest('.ov'));
   return (
     <div
-      class={`player ${showControls || listOpen || menuOpen ? '' : 'no-cursor'}`}
-      onMouseMove={(e) => { setHover(!!(e.target.closest && e.target.closest('.info-banner'))); if (pointerMoved(e)) { pokeMouse(); poke(); } }}
-      onClick={(e) => { if (!(e.target.closest && e.target.closest('.ov'))) { pokeMouse(8000); poke(8000); } }}
+      class={`player ${showControls || cursorActive || listOpen || menuOpen ? '' : 'no-cursor'}`}
+      onMouseMove={(e) => {
+        if (!pointerMoved(e)) return;
+        pokeCursor();
+        if (bannerVisible && e.target.closest && e.target.closest('.info-banner')) poke(8000);
+      }}
+      onClick={(e) => { if (!inOverlay(e)) { if (showControls) hideBanner(); else poke(8000); } }}
       onDblClick={(e) => { if (!(e.target.closest && e.target.closest('.ov'))) win('toggleFullscreen'); }}
       onContextMenu={(e) => { e.preventDefault(); setMenuOpen(true); }}
       onWheel={(e) => { volumeBy(e.deltaY < 0 ? 5 : -5); }}
@@ -171,7 +179,7 @@ function LivePlayer({ channel }) {
       {showControls ? (
         <>
           <InfoBanner channel={shown} viaRelay={st.viaRelay && pending == null}>
-            <div class="live-controls" onClick={(e) => e.stopPropagation()} onDblClick={(e) => e.stopPropagation()}>
+            <div class="live-controls" onClick={(e) => { e.stopPropagation(); poke(8000); }} onDblClick={(e) => e.stopPropagation()}>
               <CtlButton icon={st.paused ? 'play' : 'pause'} label={st.paused ? 'Play' : 'Pause'} title="Pause / play (Space)" onClick={() => call('player.togglePause')} />
               <CtlButton icon="chevU" label="Channel up" title="Previous channel in the list (↑)" onClick={() => step(-1)} />
               <CtlButton icon="chevD" label="Channel down" title="Next channel in the list (↓)" onClick={() => step(1)} />

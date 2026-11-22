@@ -2,6 +2,11 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.8
+- Fixed (second try): the live TV controls now go away 8 seconds after you click the picture. Moving the mouse no longer brings them up; it only shows the pointer
+- Click the picture again to hide the controls straight away
+- Using a button on the control row, or moving the mouse over it, keeps the controls up for another 8 seconds
+
 ## 1.1.7
 - New free playlist: Free-TV (worldwide), about 2,200 free-to-air channels grouped by country (Settings → Playlists → + Free channels)
 - Playlists that list both a combined TV guide and its per-country parts now download only the combined one, so the guide loads much faster
