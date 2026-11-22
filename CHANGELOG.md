@@ -2,6 +2,9 @@
 
 The section for each version becomes the text of its GitHub release, which the app shows when it offers the update.
 
+## 1.1.10
+- Fixed: on Windows, clicks and mouse movement over the picture never reached WiseTV at all (your log showed none arriving). An invisible layer over the picture now catches them, so clicking the picture shows the controls again (click again to hide them), moving the mouse brings them up, and the guide preview's buttons appear when you point at it
+
 ## 1.1.9
 - Fixed: after 1.1.8 the live TV controls wouldn't come back. Clicking the picture shows them again (click again to hide them), and moving the mouse across the picture brings them up too
 - WiseTV now notes mouse clicks over the video in its log file, to help track down any remaining mouse problems

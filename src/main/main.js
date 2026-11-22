@@ -31,6 +31,7 @@ let uiWin = null;
 let tray = null;
 let quitting = false;
 let overlayMode = 'transparent';
+let useCatcher = false;
 let mpv = null;
 let shownTrayHint = false;
 
@@ -49,6 +50,7 @@ function syncBounds() {
   if (!videoWin || !uiWin || videoWin.isDestroyed() || uiWin.isDestroyed()) return;
   const b = videoWin.getContentBounds();
   uiWin.setBounds(b);
+  if (useCatcher) require('./catcher').update();
 }
 
 function saveBounds() {
@@ -115,7 +117,11 @@ function createWindows() {
     },
   });
   uiWin.setMenu(null);
+  useCatcher = (process.platform === 'win32' && overlayMode === 'shape' && process.env.WISETV_CATCHER !== '0') || process.env.WISETV_CATCHER === '1';
+  if (useCatcher) require('./catcher').create(videoWin, uiWin, catcherEvent);
   syncBounds();
+  uiWin.on('show', syncBounds);
+  uiWin.on('hide', syncBounds);
 
   for (const ev of ['move', 'resize', 'maximize', 'unmaximize', 'restore', 'show']) videoWin.on(ev, syncBounds);
   for (const ev of ['enter-full-screen', 'leave-full-screen']) {
@@ -158,6 +164,27 @@ function createWindows() {
     if (b.maximized) videoWin.maximize();
     if (!startHidden) showWindows();
   });
+}
+
+// Mouse events from the catcher window (catcher.js), passed to the interface.
+let catcherLastMove = '';
+let catcherMoveAt = 0;
+function catcherEvent(ev, cb) {
+  if (!uiWin || uiWin.isDestroyed()) return;
+  const type = String(ev.type || '');
+  if (!['move', 'click', 'dblclick', 'context', 'wheel', 'back'].includes(type)) return;
+  const ub = uiWin.getContentBounds();
+  const x = Math.round(cb.x - ub.x + Number(ev.x || 0));
+  const y = Math.round(cb.y - ub.y + Number(ev.y || 0));
+  if (type === 'move') {
+    const at = `${x},${y}`;
+    if (at === catcherLastMove || Date.now() - catcherMoveAt < 40) return;
+    catcherLastMove = at;
+    catcherMoveAt = Date.now();
+  } else {
+    log.i(`mouse over video (catcher): ${type} at ${x},${y}`);
+  }
+  send('vmouse', { type, x, y, arg: ev.arg });
 }
 
 function showWindows() {
@@ -258,6 +285,7 @@ function registerIpc() {
         return true;
       case 'video':
         require('./playback').setVideoRect(arg);
+        if (useCatcher) require('./catcher').place(arg);
         return true;
       case 'shape':
         if (overlayMode === 'shape' && uiWin && Array.isArray(arg)) uiWin.setShape(arg);
